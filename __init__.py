@@ -102,8 +102,8 @@ def FindCanvas(obj):
 
 
 def isFTransf():
-    user_preferences = bpy.context.user_preferences
-    addons = user_preferences.addons
+    preferences = bpy.context.preferences
+    addons = preferences.addons
     addon_prefs = addons[__name__].preferences
     if addon_prefs.fast_transform:
         return True
@@ -114,16 +114,16 @@ def isFTransf():
 """
 # EXPERIMENTAL FEATURES
 def isMakeVertexGroup():
-    user_preferences = bpy.context.user_preferences
-    addon_prefs = user_preferences.addons[__name__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__name__].preferences
     if addon_prefs.make_vertex_groups:
         return True
     else:
         return False
 
 def isMakeBoundary():
-    user_preferences = bpy.context.user_preferences
-    addon_prefs = user_preferences.addons[__name__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__name__].preferences
     if addon_prefs.make_boundary:
         return True
     else:
@@ -141,7 +141,7 @@ def ConvertToMesh(obj):
 # Do the Union, Difference and Intersection Operations with a Brush
 def Operation(context, _operation):
 
-    prefs = bpy.context.user_preferences.addons[__name__].preferences
+    prefs = bpy.context.preferences.addons[__name__].preferences
     useWire = prefs.use_wire
 
     for selObj in bpy.context.selected_objects:
@@ -503,7 +503,7 @@ class OBJECT_OT_BTool_FastTransform(Operator):
     def modal(self, context, event):
         self.count += 1
         actObj = bpy.context.active_object
-        useWire = bpy.context.user_preferences.addons[__name__].preferences.use_wire
+        useWire = bpy.context.preferences.addons[__name__].preferences.use_wire
         if self.count == 1:
 
             if isBrush(actObj) and actObj["BoolTool_FTransform"] == "True":
@@ -949,10 +949,10 @@ def VIEW3D_BoolTool_Menu(self, context):
 # ---------------- Toolshelf: Tools ---------------------
 
 class VIEW3D_PT_booltool_tools(Panel):
-    bl_idname = "Tools"
+    #bl_idname = "Tools"
     bl_label = "Bool Tool"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
     bl_context = 'objectmode'
 
     @classmethod
@@ -1010,10 +1010,10 @@ class VIEW3D_PT_booltool_tools(Panel):
 # ---------- Toolshelf: Properties --------------------------------------------------------
 
 class VIEW3D_PT_booltool_config(Panel):
-    bl_category = "Tools"
+    #bl_category = "Tools"
     bl_label = "Properties"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
     bl_context = 'objectmode'
 
     @classmethod
@@ -1102,10 +1102,10 @@ class VIEW3D_PT_booltool_config(Panel):
 # ---------- Toolshelf: Brush Viewer -------------------------------------------------------
 
 class VIEW3D_PT_booltool_bviewer(Panel):
-    bl_category = "Tools"
+    #bl_category = "Tools"
     bl_label = "Brush Viewer"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
     bl_context = 'objectmode'
 
     @classmethod
@@ -1231,7 +1231,7 @@ def update_panels(self, context):
                 bpy.utils.unregister_class(panel)
 
         for panel in panels:
-            panel.bl_category = context.user_preferences.addons[__name__].preferences.category
+            panel.bl_category = context.preferences.addons[__name__].preferences.category
             bpy.utils.register_class(panel)
 
     except Exception as e:
@@ -1240,39 +1240,39 @@ def update_panels(self, context):
 
 
 class PREFS_BoolTool_Props(AddonPreferences):
-    bl_idname = __name__
+    bl_idname : __name__
 
-    fast_transform = BoolProperty(
+    fast_transform : BoolProperty(
             name="Fast Transformations",
             default=False,
             update=UpdateBoolTool_Pref,
             description="Replace the Transform HotKeys (G,R,S)\n"
                         "for a custom version that can optimize the visualization of Brushes",
             )
-    make_vertex_groups = BoolProperty(
+    make_vertex_groups : BoolProperty(
             name="Make Vertex Groups",
             default=False,
             description="When Applying a Brush to the Object it will create\n"
                         "a new vertex group for the new faces",
             )
-    make_boundary = BoolProperty(
+    make_boundary : BoolProperty(
             name="Make Boundary",
             default=False,
             description="When Apply a Brush to the Object it will create a\n"
                         "new vertex group of the boundary boolean area",
             )
-    use_wire = BoolProperty(
+    use_wire : BoolProperty(
             name="Use Bmesh",
             default=False,
             description="Use The Wireframe Instead of Bounding Box for visualization",
             )
-    category = StringProperty(
+    category : StringProperty(
             name="Tab Category",
             description="Choose a name for the category of the panel",
             default="Tools",
             update=update_panels,
             )
-    Enable_Tab_01 = BoolProperty(
+    Enable_Tab_01 : BoolProperty(
             default=False
             )
 
@@ -1410,7 +1410,7 @@ def register():
             update=update_BoolHide,
             )
     # Handlers
-    bpy.app.handlers.scene_update_post.append(HandleScene)
+    bpy.app.handlers.depsgraph_update_post.append(HandleScene)#?#####################################???????????????????
 
     bpy.types.VIEW3D_MT_object.append(VIEW3D_BoolTool_Menu)
     try:
@@ -1428,17 +1428,17 @@ def register():
     addon_keymaps.append((km, kmi))
 
     # Brush Operators
-    kmi = km.keymap_items.new(BTool_Union.bl_idname, 'NUMPAD_PLUS', 'PRESS', ctrl=True)
+    kmi = km.keymap_items.new(OBJECT_OT_BTool_Union.bl_idname, 'NUMPAD_PLUS', 'PRESS', ctrl=True)
     addon_keymaps.append((km, kmi))
-    kmi = km.keymap_items.new(BTool_Diff.bl_idname, 'NUMPAD_MINUS', 'PRESS', ctrl=True)
+    kmi = km.keymap_items.new(OBJECT_OT_BTool_Diff.bl_idname, 'NUMPAD_MINUS', 'PRESS', ctrl=True)
     addon_keymaps.append((km, kmi))
-    kmi = km.keymap_items.new(BTool_Inters.bl_idname, 'NUMPAD_ASTERIX', 'PRESS', ctrl=True)
+    kmi = km.keymap_items.new(OBJECT_OT_BTool_Inters.bl_idname, 'NUMPAD_ASTERIX', 'PRESS', ctrl=True)
     addon_keymaps.append((km, kmi))
-    kmi = km.keymap_items.new(BTool_Slice.bl_idname, 'NUMPAD_SLASH', 'PRESS', ctrl=True)
+    kmi = km.keymap_items.new(OBJECT_OT_BTool_Slice.bl_idname, 'NUMPAD_SLASH', 'PRESS', ctrl=True)
     addon_keymaps.append((km, kmi))
-    kmi = km.keymap_items.new(BTool_BrushToMesh.bl_idname, 'NUMPAD_ENTER', 'PRESS', ctrl=True)
+    kmi = km.keymap_items.new(OBJECT_OT_BTool_BrushToMesh.bl_idname, 'NUMPAD_ENTER', 'PRESS', ctrl=True)
     addon_keymaps.append((km, kmi))
-    kmi = km.keymap_items.new(BTool_AllBrushToMesh.bl_idname, 'NUMPAD_ENTER', 'PRESS', ctrl=True, shift=True)
+    kmi = km.keymap_items.new(OBJECT_OT_BTool_AllBrushToMesh.bl_idname, 'NUMPAD_ENTER', 'PRESS', ctrl=True, shift=True)
     addon_keymaps.append((km, kmi))
 
     # Auto Operators
